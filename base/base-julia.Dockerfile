@@ -13,12 +13,12 @@ RUN apt update && \
 # Install Julia (source: official Julia image 1.12.0-trixie)
 # https://github.com/docker-library/julia/blob/30e953f8abfa024651984120929c403b7cdf5a9a/1.12/trixie/Dockerfile)
 
-ENV JULIA_PATH /usr/local/julia
+ENV JULIA_PATH /tmp/julia
 ENV PATH $JULIA_PATH/bin:$PATH
 
 # Setup julia depot in tmp for AWS Lambda
-RUN mkdir -p /tmp/julia_depot
-ENV JULIA_DEPOT_PATH=/tmp/julia_depot
+# RUN mkdir -p /tmp/julia_depot
+ENV JULIA_DEPOT_PATH $JULIA_PATH
 
 # https://julialang.org/juliareleases.asc
 # Julia (Binary signing key) <buildbot@julialang.org>
@@ -83,9 +83,11 @@ RUN set -eux; \
 
 # Install Julia packages
 
-RUN julia -e 'using Pkg; Pkg.add(["JSON","HTTP"])'
+RUN julia -e 'using Pkg; Pkg.add(["JSON","HTTP","DifferentialEquations","CSV","DataFrames"]); \
+    using JSON, HTTP, DifferentialEquations, CSV, DataFrames'
 
 # Install Python packages
+
 COPY requirements.txt /tmp/
 RUN update-ca-certificates \
     && pip install --no-cache-dir --requirement /tmp/requirements.txt && \
